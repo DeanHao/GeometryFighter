@@ -14,13 +14,13 @@ class GameViewController: UIViewController {
 	var scnView: SCNView!
 	var scnScene: SCNScene!
 	var cameraNode: SCNNode!
+	var recycleTime: NSTimeInterval = 0
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		
 		confView()
 		confCamera()
-		createGeometry()
 	}
 	
 	override func shouldAutorotate() -> Bool {
@@ -42,6 +42,9 @@ class GameViewController: UIViewController {
 		scnView.showsStatistics = true
 		scnView.allowsCameraControl = true
 		scnView.autoenablesDefaultLighting = true
+		scnView.delegate = self
+		scnView.playing = true
+		
 	}
 	
 	func confCamera() {
@@ -89,4 +92,24 @@ class GameViewController: UIViewController {
 		scnScene.rootNode.addChildNode(geometryNode)
 	}
 	
+	func clearGeometry() {
+		for node in scnScene.rootNode.childNodes {
+			if node.presentationNode.position.y < -2 {
+				node.removeFromParentNode()
+			}
+		}
+	}
+	
+}
+
+extension GameViewController: SCNSceneRendererDelegate {
+	func renderer(renderer: SCNSceneRenderer, updateAtTime time: NSTimeInterval) {
+		if time > recycleTime {
+			createGeometry()
+			
+			recycleTime = time + NSTimeInterval(Float.random(min: 0.2, max: 1.5))
+		}
+		
+		clearGeometry()
+	}
 }
